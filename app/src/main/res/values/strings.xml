@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">TasksFlow</string>
+    <string name="greet">Hello %1$s!</string>
+    <string name="motto">Let\'s get this done today!</string>
+    <string name="empty_field">You need to complete this field!</string>
+
+    <string-array name="subjects">
+        <item>Android</item>
+        <item>Data base</item>
+        <item>Machine Learning</item>
+        <item>Python</item>
+    </string-array>
+
+    <string-array name="priority">
+        <item>low</item>
+        <item>medium</item>
+        <item>high</item>
+    </string-array>
+
+    <string-array name="filtr">
+        <item>All</item>
+        <item>Only finished tasks</item>
+        <item>Only not started tasks</item>
+    </string-array>
+</resources>
