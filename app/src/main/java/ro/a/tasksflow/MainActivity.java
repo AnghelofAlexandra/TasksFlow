@@ -1,12 +1,10 @@
 package ro.a.tasksflow;
 
 import static android.view.View.GONE;
-import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,15 +22,12 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -43,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Task> shownTasks = new ArrayList<>();
     private ArrayAdapter<Task> adapter;
     private ActivityResultLauncher<Intent> addTask;
-    private ActivityResultLauncher<Intent> updateTask;
-    private ActivityResultLauncher<Intent> showAcc;
+
+    private int position = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        LinearLayout filter = findViewById(R.id.layFiltr);
         LinearLayout update = findViewById(R.id.layUpt);
         update.setVisibility(GONE);
 
@@ -114,68 +110,78 @@ public class MainActivity extends AppCompatActivity {
 
         lsTasks.setOnItemClickListener(
                 (parent, view, position, id) -> {
-                    update.setVisibility(VISIBLE);
-
-                    EditText etTitle = findViewById(R.id.etTitle);
-                    EditText etDesc = findViewById(R.id.etDescription);
-                    Spinner spSub = findViewById(R.id.spSub);
-                    EditText etDeadline = findViewById(R.id.tvDeadline);
-                    Spinner spPrior = findViewById(R.id.spPrior);
-                    CheckBox ckComplete = findViewById(R.id.ckComplete);
-
-                    Task t = this.shownTasks.get(position);
-                    etTitle.setText(t.getTitle());
-                    etDesc.setText(t.getDescription());
-
-                    switch (t.getSubject())
+                    if(update.getVisibility() == GONE || this.position != position)
                     {
-                        case "Android":
-                            spSub.setSelection(0);
-                            break;
-                        case "Data base":
-                            spSub.setSelection(1);
-                            break;
-                        case "Machine Learning":
-                            spSub.setSelection(2);
-                            break;
-                        case "Python":
-                            spSub.setSelection(3);
-                            break;
+                        this.position = position;
+
+                        update.setVisibility(VISIBLE);
+                        filter.setVisibility(GONE);
+
+                        EditText etTitle = findViewById(R.id.etTitle);
+                        EditText etDesc = findViewById(R.id.etDescription);
+                        Spinner spSub = findViewById(R.id.spSub);
+                        EditText etDeadline = findViewById(R.id.tvDeadline);
+                        Spinner spPrior = findViewById(R.id.spPrior);
+                        CheckBox ckComplete = findViewById(R.id.ckComplete);
+
+                        Task t = this.shownTasks.get(position);
+                        etTitle.setText(t.getTitle());
+                        etDesc.setText(t.getDescription());
+
+                        switch (t.getSubject()) {
+                            case "Android":
+                                spSub.setSelection(0);
+                                break;
+                            case "Data base":
+                                spSub.setSelection(1);
+                                break;
+                            case "Machine Learning":
+                                spSub.setSelection(2);
+                                break;
+                            case "Python":
+                                spSub.setSelection(3);
+                                break;
+                        }
+
+                        etDeadline.setText(t.getDeadline());
+
+                        switch (t.getPriority()) {
+                            case "low":
+                                spPrior.setSelection(0);
+                                break;
+                            case "medium":
+                                spPrior.setSelection(1);
+                                break;
+                            case "high":
+                                spPrior.setSelection(2);
+                                break;
+                        }
+
+                        ckComplete.setChecked(t.isCompleted());
+
+                        Button updBtn = findViewById(R.id.btnUpdateTask);
+                        updBtn.setOnClickListener(
+                                v -> {
+                                    Task newTask = update(etTitle, etDesc, spSub, etDeadline, spPrior, ckComplete, t);
+                                    this.shownTasks.get(position).setTitle(newTask.getTitle());
+                                    this.shownTasks.get(position).setDescription(newTask.getDescription());
+                                    this.shownTasks.get(position).setSubject(newTask.getSubject());
+                                    this.shownTasks.get(position).setDeadline(newTask.getDeadline());
+                                    this.shownTasks.get(position).setPriority(newTask.getPriority());
+                                    this.shownTasks.get(position).setCompleted(newTask.isCompleted());
+
+                                    this.adapter.notifyDataSetChanged();
+
+                                    update.setVisibility(GONE);
+                                    filter.setVisibility(VISIBLE);
+                                }
+                        );
                     }
-
-                    etDeadline.setText(t.getDeadline());
-
-                    switch (t.getPriority())
+                    else
                     {
-                        case "low":
-                            spPrior.setSelection(0);
-                            break;
-                        case "medium":
-                            spPrior.setSelection(1);
-                            break;
-                        case "high":
-                            spPrior.setSelection(2);
-                            break;
+                        update.setVisibility(GONE);
+                        filter.setVisibility(VISIBLE);
                     }
-
-                    ckComplete.setChecked(t.isCompleted());
-
-                    Button updBtn = findViewById(R.id.btnUpdateTask);
-                    updBtn.setOnClickListener(
-                            v->{
-                               Task newTask = update(etTitle, etDesc, spSub, etDeadline, spPrior, ckComplete, t);
-                                this.shownTasks.get(position).setTitle(newTask.getTitle());
-                                this.shownTasks.get(position).setDescription(newTask.getDescription());
-                                this.shownTasks.get(position).setSubject(newTask.getSubject());
-                                this.shownTasks.get(position).setDeadline(newTask.getDeadline());
-                                this.shownTasks.get(position).setPriority(newTask.getPriority());
-                                this.shownTasks.get(position).setCompleted(newTask.isCompleted());
-
-                                this.adapter.notifyDataSetChanged();
-
-                                update.setVisibility(GONE);
-                            }
-                    );
                 }
         );
 
@@ -221,9 +227,7 @@ public class MainActivity extends AppCompatActivity {
                 }
         );
         btnAdd.setOnClickListener(
-                v -> {
-                    this.addTask.launch(new Intent(this, AddTask.class));
-                }
+                v -> this.addTask.launch(new Intent(this, AddTask.class))
         );
 
         Spinner spFiltr = findViewById(R.id.spFiltr);
@@ -281,16 +285,14 @@ public class MainActivity extends AppCompatActivity {
             return currentTask;
         }
 
-        Task t = new Task(
-                title,
-                (description.isEmpty() ? "" : description),
-                sub,
-                deadline,
-                prior,
-                complete
+        return new Task(
+            title,
+            (description.isEmpty() ? "" : description),
+            sub,
+            deadline,
+            prior,
+            complete
         );
-
-        return t;
     }
 
     public void filterTasks(String criteria)
@@ -301,11 +303,8 @@ public class MainActivity extends AppCompatActivity {
             case "All":
                 this.shownTasks.addAll(this.user.getTasks());
                 break;
-            case "Only finished tasks":
-                this.shownTasks.addAll(this.user.getTasks().stream().filter(Task::isCompleted).collect(Collectors.toList()));
-                break;
-            case "Only not started tasks":
-                this.shownTasks.addAll(this.user.getTasks().stream().filter(t -> !t.isCompleted()).collect(Collectors.toList()));
+            case "Only high priority tasks":
+                this.shownTasks.addAll(this.user.getTasks().stream().filter(t -> t.getPriority().equals("high")).collect(Collectors.toList()));
                 break;
         }
 

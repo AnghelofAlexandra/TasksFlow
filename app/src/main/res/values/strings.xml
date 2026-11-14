@@ -19,7 +19,6 @@
 
     <string-array name="filtr">
         <item>All</item>
-        <item>Only finished tasks</item>
-        <item>Only not started tasks</item>
+        <item>Only high priority tasks</item>
     </string-array>
 </resources>
